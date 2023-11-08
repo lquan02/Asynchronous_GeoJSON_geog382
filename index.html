@@ -73,11 +73,14 @@
             tr:hover {
                 background-color: #e8e8e8; /* Highlight rows on hover */
             }
-            /* Additional responsive adjustments */
+            /* Add this at the bottom of your existing styles */
             @media screen and (max-width: 1024px) {
                 #table {
-                    width: 100%; /* Side panel full width on smaller screens */
-                    height: auto; /* Adjust height as necessary */
+                    display: none; /* This hides the side panel when the viewport width is less than 1024px */
+                }
+                #map {
+                    width: 100%; /* The map takes the full width when the side panel is hidden */
+                    height: 100vh; /* Optional: Adjust the height to take up the full viewport height */
                 }
             }
         </style>        
@@ -121,13 +124,11 @@
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 let usa = await response.json();
-
                 var table = document.getElementsByTagName("table");
                 for (let i = 0; i < airports.features.length; i++) {
                     // console.log(airports.features[i].properties.id);
                     var lng = await airports.features[i].geometry.coordinates[0];
                     var lat = await airports.features[i].geometry.coordinates[1];
-
                     // Create an empty <tr> element and add it to the 1st position of the table:
                     var row = table[0].insertRow(-1);
                     var cell1 = row.insertCell(0);
@@ -137,7 +138,6 @@
                     cell2.innerHTML = await airports.features[i].properties.name;
                     cell3.innerHTML = await airports.features[i].properties.city;
                 }
-
                 map.on('load', () => {
                     map.addSource('usa', {
                         type: 'geojson',
@@ -152,7 +152,6 @@
                             'fill-opacity': 0.5
                         }
                     });
-
                     map.addSource('airports', {
                         type: 'geojson',
                         data: airports
@@ -170,10 +169,9 @@
                     });
                 });
             }
-            geojsonFetch()
-                .catch(e => {
+            geojsonFetch().catch(e => {
                     console.log('There has been a problem with your fetch operation: ' + e.message);
-                });
+            });
             //The sortAlphabetTable() function use for sorting alphabetical in City name and Airport name
             function sortAlphabetTable(n) {
                 var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
