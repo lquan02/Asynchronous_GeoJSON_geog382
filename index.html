@@ -48,13 +48,14 @@
     <body>
         <main id="container">
             <div id="table">
-                <h2>Earthquake List</h2>
-                <button onclick="sortTable()">Sort by Magnitude</button>
-                <table>
+                <h2>Major Airports in US List</h2>
+                <button onclick="sortTable(1)">Sort by Airport Name</button>
+                <button onclick="sortTable(2)">Sort by City Name</button>
+                <table id="myTable">
                     <tr>
-                        <th>id</th>
-                        <th>magnitude</th>
-                        <th>timestamp</th>
+                        <th>ID</th>
+                        <th>Airpot Name</th>
+                        <th>City Name</th>
                     </tr>
                 </table>
             </div>
@@ -66,15 +67,15 @@
             const map = new mapboxgl.Map({
                 container: 'map', // container ID
                 style: 'mapbox://styles/mapbox/satellite-v9', // style URL
-                zoom: 4.5, // starting zoom
-                center: [138.043, 38] // starting center
+                zoom: 3.5, // starting zoom
+                center: [-97.54835343910146, 38.993190260738494] // starting center
             });
             async function geojsonFetch() {
-                let response = await fetch('assets/earthquakes.geojson');
+                let response = await fetch('assets/airports.geojson');
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                let earthquakes = await response.json();
+                let airports = await response.json();
                 response = await fetch('assets/japan.json');
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -82,30 +83,30 @@
                 let japan = await response.json();
 
                 var table = document.getElementsByTagName("table");
-                for (let i = 0; i < earthquakes.features.length; i++) {
-                    // console.log(earthquakes.features[i].properties.id);
-                    var lng = await earthquakes.features[i].geometry.coordinates[0];
-                    var lat = await earthquakes.features[i].geometry.coordinates[1];
+                for (let i = 0; i < airports.features.length; i++) {
+                    // console.log(airports.features[i].properties.id);
+                    var lng = await airports.features[i].geometry.coordinates[0];
+                    var lat = await airports.features[i].geometry.coordinates[1];
 
                     // Create an empty <tr> element and add it to the 1st position of the table:
                     var row = table[0].insertRow(-1);
                     var cell1 = row.insertCell(0);
                     var cell2 = row.insertCell(1);
                     var cell3 = row.insertCell(2);
-                    cell1.innerHTML = await earthquakes.features[i].properties.id;
-                    cell2.innerHTML = await earthquakes.features[i].properties.mag;
-                    cell3.innerHTML = await new Date(earthquakes.features[i].properties.time).toLocaleDateString("en-US");
+                    cell1.innerHTML = await airports.features[i].properties.id;
+                    cell2.innerHTML = await airports.features[i].properties.name;
+                    cell3.innerHTML = await airports.features[i].properties.city;
                 }
 
                 map.on('load', () => {
-                    map.addSource('earthquakes', {
+                    map.addSource('airports', {
                         type: 'geojson',
-                        data: earthquakes
+                        data: airports
                     });
                     map.addLayer({
-                        'id': 'earthquakes-layer',
+                        'id': 'airports-layer',
                         'type': 'circle',
-                        'source': 'earthquakes',
+                        'source': 'airports',
                         'paint': {
                             'circle-radius': 8,
                             'circle-stroke-width': 2,
@@ -132,10 +133,12 @@
                 .catch(e => {
                     console.log('There has been a problem with your fetch operation: ' + e.message);
                 });
-            function sortTable() {
-                var table, rows, switching, i, x, y, shouldSwitch;
-                table = document.getElementsByTagName("table")[0];
+            function sortTable(n) {
+                var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+                table = document.getElementById("myTable");
                 switching = true;
+                //Set the sorting direction to ascending:
+                dir = "asc"; 
                 /*Make a loop that will continue until
                 no switching has been done:*/
                 while (switching) {
@@ -145,24 +148,42 @@
                     /*Loop through all table rows (except the
                     first, which contains table headers):*/
                     for (i = 1; i < (rows.length - 1); i++) {
-                        //start by saying there should be no switching:
-                        shouldSwitch = false;
-                        /*Get the two elements you want to compare,
-                        one from current row and one from the next:*/
-                        x = parseFloat(rows[i].getElementsByTagName("td")[1].innerHTML);
-                        y = parseFloat(rows[i + 1].getElementsByTagName("td")[1].innerHTML);
-                        //check if the two rows should switch place:
-                        if (x < y) {
-                            //if so, mark as a switch and break the loop:
-                            shouldSwitch = true;
-                            break;
+                    //start by saying there should be no switching:
+                    shouldSwitch = false;
+                    /*Get the two elements you want to compare,
+                    one from current row and one from the next:*/
+                    x = rows[i].getElementsByTagName("TD")[n];
+                    y = rows[i + 1].getElementsByTagName("TD")[n];
+                    /*check if the two rows should switch place,
+                    based on the direction, asc or desc:*/
+                    if (dir == "asc") {
+                        if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+                        //if so, mark as a switch and break the loop:
+                        shouldSwitch= true;
+                        break;
+                        }
+                    } else if (dir == "desc") {
+                        if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+                        //if so, mark as a switch and break the loop:
+                        shouldSwitch = true;
+                        break;
                         }
                     }
+                    }
                     if (shouldSwitch) {
-                        /*If a switch has been marked, make the switch
-                        and mark that a switch has been done:*/
-                        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    /*If a switch has been marked, make the switch
+                    and mark that a switch has been done:*/
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                    //Each time a switch is done, increase this count by 1:
+                    switchcount ++;      
+                    } else {
+                    /*If no switching has been done AND the direction is "asc",
+                    set the direction to "desc" and run the while loop again.*/
+                    if (switchcount == 0 && dir == "asc") {
+                        dir = "desc";
                         switching = true;
+                    }
                     }
                 }
             }
