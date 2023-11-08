@@ -2,61 +2,97 @@
 <html lang="en-US">
     <head>
         <meta charset="utf-8">
-        <title>Major Airports in United States</title>
         <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
         <link href="https://api.mapbox.com/mapbox-gl-js/v2.5.0/mapbox-gl.css" rel="stylesheet">
         <script src="https://api.mapbox.com/mapbox-gl-js/v2.5.0/mapbox-gl.js"></script>
+        <title>Major Airports in United States</title>
         <style>
-            body {
+            body, html {
                 margin: 0;
                 padding: 0;
+                height: 100%;
+                width: 100%;
             }
             #container {
+                position: relative; /* Stacking context for absolutely positioned children */
+                width: 100%;
+                height: 100%;
+                overflow: hidden; /* Prevent scrollbars if the content overflows */
+            }
+            #map {
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                right: 0;
+            }
+            .button-container {
                 display: flex;
-                height: 100vh;
-                flex-direction: row;
-                align-items: stretch;
+                justify-content: space-around; /* This will space out the buttons equally */
+                margin-bottom: 10px; /* Space below the buttons */
+            }
+
+            .button-container button {
+                flex: 1; /* Each button will take up equal space */
+                margin: 0 5px; /* Add some margin between buttons */
             }
             #table {
-                flex-basis: 500px;
-                overflow-y: scroll;
+                position: absolute;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                width: 300px; /* Adjust the width of the side panel as needed */
+                background: rgba(255, 255, 255, 0.8); /* Semi-transparent white background */
+                overflow-y: auto; /* Scrollable content */
+                z-index: 1; /* Above the map */
+                padding: 20px; /* Padding for aesthetics */
             }
             #table h2 {
                 text-align: center;
-                margin-top: 0;
-                margin-bottom: 0;
-                padding: 10px 0; /* Adjust the top and bottom padding as needed */
             }
-            #map {
-                flex-grow: 1;
-            }
+            /* Style for buttons and table inside #table */
             button {
-                margin-bottom: 10px;
+                display: block; /* Make buttons block-level for full width */
+                width: 100%;
+                margin: 10px 0; /* Space out buttons */
             }
             table {
-                border-collapse: collapse;
-                border-spacing: 0;
                 width: 100%;
-                border: 1px solid #ddd;
+                border-collapse: collapse;
+                margin-top: 10px; /* Space between buttons and table */
             }
-            th,
-            td {
+            th, td {
                 text-align: left;
-                padding: 16px;
+                padding: 8px;
+            }
+            th {
+                background-color: #f2f2f2; /* Light grey background for headers */
             }
             tr:nth-child(even) {
-                background-color: #f2f2f2;
+                background-color: #f9f9f9;
             }
-        </style>
+            tr:hover {
+                background-color: #e8e8e8; /* Highlight rows on hover */
+            }
+            /* Additional responsive adjustments */
+            @media screen and (max-width: 1024px) {
+                #table {
+                    width: 100%; /* Side panel full width on smaller screens */
+                    height: auto; /* Adjust height as necessary */
+                }
+            }
+        </style>        
     </head>
     <body>
         <main id="container">
             <div id="map"></div>
             <div id="table">
                 <h2>Major Airports in US List</h2>
-                <button onclick="sortNumTable(0)">Sort by Year</button>
-                <button onclick="sortAlphabetTable(1)">Sort by Airport Name</button>
-                <button onclick="sortAlphabetTable(2)">Sort by City Name</button>
+                <div class="button-container">
+                    <button onclick="sortNumTable(0)">Sort by Year</button>
+                    <button onclick="sortAlphabetTable(1)">Sort by Airport Name</button>
+                    <button onclick="sortAlphabetTable(2)">Sort by City Name</button>
+                </div>
                 <table id="myTable">
                     <tr>
                         <th>Year Establish</th>
@@ -72,8 +108,8 @@
             const map = new mapboxgl.Map({
                 container: 'map', // container ID
                 style: 'mapbox://styles/mapbox/satellite-v9', // style URL
-                zoom: 2.0, // starting zoom
-                center: [-130.22557217186474,33.51552717026332] // starting center
+                zoom: 2.15, // starting zoom
+                center: [-113.02949656210083, 37.0661117547694] // starting center
             });
             async function geojsonFetch() {
                 let response = await fetch('assets/airports.geojson');
