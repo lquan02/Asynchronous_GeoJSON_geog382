@@ -2,7 +2,7 @@
 <html lang="en-US">
     <head>
         <meta charset="utf-8">
-        <title>Load data from an external GeoJSON file</title>
+        <title>Major Airports in United States</title>
         <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
         <link href="https://api.mapbox.com/mapbox-gl-js/v2.5.0/mapbox-gl.css" rel="stylesheet">
         <script src="https://api.mapbox.com/mapbox-gl-js/v2.5.0/mapbox-gl.js"></script>
@@ -21,7 +21,12 @@
                 flex-basis: 500px;
                 overflow-y: scroll;
             }
-
+            #table h2 {
+                text-align: center;
+                margin-top: 0;
+                margin-bottom: 0;
+                padding: 10px 0; /* Adjust the top and bottom padding as needed */
+            }
             #map {
                 flex-grow: 1;
             }
@@ -39,7 +44,6 @@
                 text-align: left;
                 padding: 16px;
             }
-
             tr:nth-child(even) {
                 background-color: #f2f2f2;
             }
@@ -47,19 +51,20 @@
     </head>
     <body>
         <main id="container">
+            <div id="map"></div>
             <div id="table">
                 <h2>Major Airports in US List</h2>
-                <button onclick="sortTable(1)">Sort by Airport Name</button>
-                <button onclick="sortTable(2)">Sort by City Name</button>
+                <button onclick="sortNumTable(0)">Sort by Year</button>
+                <button onclick="sortAlphabetTable(1)">Sort by Airport Name</button>
+                <button onclick="sortAlphabetTable(2)">Sort by City Name</button>
                 <table id="myTable">
                     <tr>
-                        <th>ID</th>
+                        <th>Year Establish</th>
                         <th>Airpot Name</th>
                         <th>City Name</th>
                     </tr>
                 </table>
             </div>
-            <div id="map"></div>
         </main>
         <script>
             mapboxgl.accessToken =
@@ -67,8 +72,8 @@
             const map = new mapboxgl.Map({
                 container: 'map', // container ID
                 style: 'mapbox://styles/mapbox/satellite-v9', // style URL
-                zoom: 3.5, // starting zoom
-                center: [-97.54835343910146, 38.993190260738494] // starting center
+                zoom: 2.0, // starting zoom
+                center: [-130.22557217186474,33.51552717026332] // starting center
             });
             async function geojsonFetch() {
                 let response = await fetch('assets/airports.geojson');
@@ -76,11 +81,11 @@
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 let airports = await response.json();
-                response = await fetch('assets/japan.json');
+                response = await fetch('assets/usa.json');
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                let japan = await response.json();
+                let usa = await response.json();
 
                 var table = document.getElementsByTagName("table");
                 for (let i = 0; i < airports.features.length; i++) {
@@ -93,12 +98,26 @@
                     var cell1 = row.insertCell(0);
                     var cell2 = row.insertCell(1);
                     var cell3 = row.insertCell(2);
-                    cell1.innerHTML = await airports.features[i].properties.id;
+                    cell1.innerHTML = await airports.features[i].properties.year;
                     cell2.innerHTML = await airports.features[i].properties.name;
                     cell3.innerHTML = await airports.features[i].properties.city;
                 }
 
                 map.on('load', () => {
+                    map.addSource('usa', {
+                        type: 'geojson',
+                        data: usa
+                    });
+                    map.addLayer({
+                        'id': 'usa-layer',
+                        'type': 'fill',
+                        'source': 'usa',
+                        'paint': {
+                            'fill-color': '#0080ff', // blue color fill
+                            'fill-opacity': 0.5
+                        }
+                    });
+
                     map.addSource('airports', {
                         type: 'geojson',
                         data: airports
@@ -114,26 +133,14 @@
                             'circle-stroke-color': 'white'
                         }
                     });
-                    map.addSource('japan', {
-                        type: 'geojson',
-                        data: japan
-                    });
-                    map.addLayer({
-                        'id': 'japan-layer',
-                        'type': 'fill',
-                        'source': 'japan',
-                        'paint': {
-                            'fill-color': '#0080ff', // blue color fill
-                            'fill-opacity': 0.5
-                        }
-                    });
                 });
             }
             geojsonFetch()
                 .catch(e => {
                     console.log('There has been a problem with your fetch operation: ' + e.message);
                 });
-            function sortTable(n) {
+            //The sortAlphabetTable() function use for sorting alphabetical in City name and Airport name
+            function sortAlphabetTable(n) {
                 var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
                 table = document.getElementById("myTable");
                 switching = true;
@@ -148,27 +155,27 @@
                     /*Loop through all table rows (except the
                     first, which contains table headers):*/
                     for (i = 1; i < (rows.length - 1); i++) {
-                    //start by saying there should be no switching:
-                    shouldSwitch = false;
-                    /*Get the two elements you want to compare,
-                    one from current row and one from the next:*/
-                    x = rows[i].getElementsByTagName("TD")[n];
-                    y = rows[i + 1].getElementsByTagName("TD")[n];
-                    /*check if the two rows should switch place,
-                    based on the direction, asc or desc:*/
-                    if (dir == "asc") {
-                        if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
-                        //if so, mark as a switch and break the loop:
-                        shouldSwitch= true;
-                        break;
+                        //start by saying there should be no switching:
+                        shouldSwitch = false;
+                        /*Get the two elements you want to compare,
+                        one from current row and one from the next:*/
+                        x = rows[i].getElementsByTagName("TD")[n];
+                        y = rows[i + 1].getElementsByTagName("TD")[n];
+                        /*check if the two rows should switch place,
+                        based on the direction, asc or desc:*/
+                        if (dir == "asc") {
+                            if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+                            //if so, mark as a switch and break the loop:
+                            shouldSwitch= true;
+                            break;
+                            }
+                        } else if (dir == "desc") {
+                            if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+                            //if so, mark as a switch and break the loop:
+                            shouldSwitch = true;
+                            break;
+                            }
                         }
-                    } else if (dir == "desc") {
-                        if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
-                        //if so, mark as a switch and break the loop:
-                        shouldSwitch = true;
-                        break;
-                        }
-                    }
                     }
                     if (shouldSwitch) {
                     /*If a switch has been marked, make the switch
@@ -180,12 +187,39 @@
                     } else {
                     /*If no switching has been done AND the direction is "asc",
                     set the direction to "desc" and run the while loop again.*/
-                    if (switchcount == 0 && dir == "asc") {
-                        dir = "desc";
-                        switching = true;
-                    }
+                        if (switchcount == 0 && dir == "asc") {
+                            dir = "desc";
+                            switching = true;
+                        }
                     }
                 }
+            }
+            //The function sortNumTable() use for sorting number of year established asc or desc.
+            var sortOrder = 'asc';
+            function sortNumTable() {
+                var table, rows, switching, i, x, y, shouldSwitch;
+                table = document.getElementById("myTable");
+                switching = true;
+                while (switching) {
+                    switching = false;
+                    rows = table.rows;
+                    for (i = 1; i < (rows.length - 1); i++) {
+                    shouldSwitch = false;
+                    x = rows[i].getElementsByTagName("TD")[0];
+                    y = rows[i + 1].getElementsByTagName("TD")[0];
+                    if ((sortOrder === 'asc' && Number(x.innerHTML) > Number(y.innerHTML)) || 
+                        (sortOrder === 'desc' && Number(x.innerHTML) < Number(y.innerHTML))) {
+                        shouldSwitch = true;
+                        break;
+                    }
+                    }
+                    if (shouldSwitch) {
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                    }
+                }
+                // Toggle the sorting order for the next click
+                sortOrder = (sortOrder === 'asc') ? 'desc' : 'asc';
             }
         </script>
     </body>
