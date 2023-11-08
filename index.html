@@ -109,7 +109,7 @@
                 'pk.eyJ1IjoiamFrb2J6aGFvIiwiYSI6ImNpcms2YWsyMzAwMmtmbG5icTFxZ3ZkdncifQ.P9MBej1xacybKcDN_jehvw';
             const map = new mapboxgl.Map({
                 container: 'map', // container ID
-                style: 'mapbox://styles/mapbox/satellite-v9', // style URL
+                style: 'mapbox://styles/mapbox/navigation-night-v1', // style URL
                 zoom: 2.15, // starting zoom
                 center: [-113.02949656210083, 37.0661117547694] // starting center
             });
@@ -161,10 +161,10 @@
                         'type': 'circle',
                         'source': 'airports',
                         'paint': {
-                            'circle-radius': 8,
-                            'circle-stroke-width': 2,
-                            'circle-color': 'red',
-                            'circle-stroke-color': 'white'
+                            'circle-radius': 4,
+                            'circle-stroke-width': 1,
+                            'circle-color': 'orange',
+                            'circle-stroke-color': 'black'
                         }
                     });
                 });
