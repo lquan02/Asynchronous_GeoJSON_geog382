@@ -125,18 +125,17 @@
                 }
                 let usa = await response.json();
                 var table = document.getElementsByTagName("table");
-                for (let i = 0; i < airports.features.length; i++) {
-                    // console.log(airports.features[i].properties.id);
-                    var lng = await airports.features[i].geometry.coordinates[0];
-                    var lat = await airports.features[i].geometry.coordinates[1];
+                for (const element of airports.features) {
+                    var lng = await element.geometry.coordinates[0];
+                    var lat = await element.geometry.coordinates[1];
                     // Create an empty <tr> element and add it to the 1st position of the table:
                     var row = table[0].insertRow(-1);
                     var cell1 = row.insertCell(0);
                     var cell2 = row.insertCell(1);
                     var cell3 = row.insertCell(2);
-                    cell1.innerHTML = await airports.features[i].properties.year;
-                    cell2.innerHTML = await airports.features[i].properties.name;
-                    cell3.innerHTML = await airports.features[i].properties.city;
+                    cell1.innerHTML = await element.properties.year;
+                    cell2.innerHTML = await element.properties.name;
+                    cell3.innerHTML = await element.properties.city;
                 }
                 map.on('load', () => {
                     map.addSource('usa', {
@@ -150,8 +149,7 @@
                         'paint': {
                             'fill-color': '#0080ff', // blue color fill
                             'fill-opacity': 0.5
-                        }
-                    });
+                    }});
                     map.addSource('airports', {
                         type: 'geojson',
                         data: airports
@@ -211,15 +209,15 @@
                         }
                     }
                     if (shouldSwitch) {
-                    /*If a switch has been marked, make the switch
-                    and mark that a switch has been done:*/
-                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-                    switching = true;
-                    //Each time a switch is done, increase this count by 1:
-                    switchcount ++;      
+                        /*If a switch has been marked, make the switch
+                        and mark that a switch has been done:*/
+                        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                        switching = true;
+                        //Each time a switch is done, increase this count by 1:
+                        switchcount ++;      
                     } else {
-                    /*If no switching has been done AND the direction is "asc",
-                    set the direction to "desc" and run the while loop again.*/
+                        /*If no switching has been done AND the direction is "asc",
+                        set the direction to "desc" and run the while loop again.*/
                         if (switchcount == 0 && dir == "asc") {
                             dir = "desc";
                             switching = true;
@@ -240,11 +238,11 @@
                     shouldSwitch = false;
                     x = rows[i].getElementsByTagName("TD")[0];
                     y = rows[i + 1].getElementsByTagName("TD")[0];
-                    if ((sortOrder === 'asc' && Number(x.innerHTML) > Number(y.innerHTML)) || 
-                        (sortOrder === 'desc' && Number(x.innerHTML) < Number(y.innerHTML))) {
-                        shouldSwitch = true;
-                        break;
-                    }
+                        if ((sortOrder === 'asc' && Number(x.innerHTML) > Number(y.innerHTML)) || 
+                            (sortOrder === 'desc' && Number(x.innerHTML) < Number(y.innerHTML))) {
+                            shouldSwitch = true;
+                            break;
+                        }
                     }
                     if (shouldSwitch) {
                     rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
